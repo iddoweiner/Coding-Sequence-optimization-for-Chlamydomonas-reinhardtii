@@ -1,5 +1,5 @@
 function [All_Profiles,mean_Profile] = ...
-    sliding_window_analysis(Data,window_size,your_func,number_of_wanted_output,varargin)
+    sliding_window_analysis(Data,window_size,your_func,number_of_wanted_output,WB,varargin)
 % [All_Profiles,mean_Profile] = sliding_window_analysis(Data,window_size,your_func,number_of_wanted_output,varargin)
 % Data = cell of sequences on which some data is to be calculated
 % window_size = self explanitory
@@ -35,6 +35,8 @@ for i=1:Rows
     
     % report progress
     disp(['finished row ' num2str(i)])
+    % wait bar
+    waitbar(0.3 + 0.7*(i/Rows),WB,'optimizing mRNA folding energy')
 end
 
 % fill mean matrix

@@ -1,6 +1,6 @@
-function [optimized_dna_seq, best_mean_FE] =...
+function [optimized_dna_seq, best_mean_FE, gene_GC] =...
     chlamy_optimize_coding_seq_IW(aa_seq, fourty_nt_upstream_atg, ...
-    CDSs, output_file_name, gene_title)
+    CDSs, output_file_name, gene_title, WB)
 %   This is a master function that organizes the data and sends it
 %   to several other optimization functions, each focusing on a 
 %   specific aspect of gene expression, and working on the output of the
@@ -71,10 +71,12 @@ end
 
 %% 3) delete splicing signals in each sequence
 
+waitbar(0.1,WB,'eliminating potnetial splicing signals within the CDS')
 splicing_data = 'splicing_signals.mat'; %name of file to load in function
 for i = 1:(length(optimized_CDS))
     optimized_CDS{i} = erase_splicing(optimized_CDS{i}, splicing_data);
-    disp(['----------seq ' num2str(i) ' cleaned---------------'])
+    % show waitbar progress
+    waitbar(0.3*(i/length(optimized_CDS)),WB,'eliminating potnetial splicing signals within the CDS')
 end
 
 % chuck un-unique variants, if there are any (waste of time down the road)
@@ -99,8 +101,23 @@ Sequences_for_FE_check = cellfun(@(x) [upstream_chunk x(1:Barrier*3)],optimized_
     'uniformoutput',0);
 
 % find seq with best folding
-FE_vals = sliding_window_analysis(Sequences_for_FE_check, window_size, @rnafold, ...
-    2, 'figure', 0);
+M = size(Sequences_for_FE_check,1);
+Cols = max(cellfun(@length,Sequences_for_FE_check)) - window_size +1;
+FE_vals = nan(M,Cols);
+for i = 1:M
+    temp_row = Sequences_for_FE_check{i,1};
+    for j = 1:(length(temp_row)-window_size+1)
+        [~,FE_vals(i,j)] = rnafold( temp_row( j:(j+window_size-1) ) );
+    end
+    % report progress
+    disp(['finished row ' num2str(i)])
+    % wait bar
+    waitbar(0.3 + 0.7*(i/M),WB,'optimizing mRNA folding energy')
+end
+
+% old:
+% sliding_window_analysis(Sequences_for_FE_check, window_size, @rnafold, ...
+%     2, 'figure', 0, WB);
 
 % get mean of each row
 FE_vals = mean(FE_vals,2);
