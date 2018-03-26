@@ -20,6 +20,9 @@ fourty_nt_upstream_atg = randseq(40);
 output_file_name = 'optimized_seq.fa';
 gene_title = 'best_chlamy_gene';
 
+% initialize waitbar
+WB = waitbar(0,'initializing...');
+
 % run the function
 [optimized_dna_seq, best_mean_FE] = chlamy_optimize_coding_seq_IW(aa_seq, ...
-    fourty_nt_upstream_atg, ref_CDSs, output_file_name, gene_title);
+    fourty_nt_upstream_atg, ref_CDSs, output_file_name, gene_title, WB);
